@@ -18,6 +18,11 @@ async function init() {
 
         const port = 3000;
 
+        app.get('/', (req, res) => {
+            res.status(200).json({
+                message: "server is running"
+            })
+        })
 
         app.use('/api', router)
 
