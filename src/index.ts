@@ -1,7 +1,9 @@
 import express from "express";
 import router from "./routes/api";
 import bodyParser from "body-parser";
+import cors from "cors";
 import db from "./utils/database";
+import docs from "./docs/route";
 
 
 
@@ -13,6 +15,7 @@ async function init() {
         console.log("database status: ", result);
         const app = express();
         // BodyParser itu harus diatas router jika tidak akan error
+        app.use(cors());
         app.use(bodyParser.json());
 
 
@@ -25,6 +28,7 @@ async function init() {
         })
 
         app.use('/api', router)
+        docs(app);
 
         app.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);
