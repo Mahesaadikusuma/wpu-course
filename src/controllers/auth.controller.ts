@@ -23,12 +23,34 @@ const registerValidateSchema = Yup.object({
     fullName: Yup.string().required(),
     username: Yup.string().required(),
     email: Yup.string().required(),
-    password: Yup.string().required(),
+    password: Yup.string().required().min(6, "Password must be at least 6 characters")
+        .test('at-least-one-uppercase-letter', 'Content at least one uppercase latter',
+            (value) => {
+                if (!value) return false;
+                const regex = /^(?=.*[A-Z])/;
+                return regex.test(value)
+            }).test('at-least-one-number-letter', 'Content at least one number latter',
+                (value) => {
+                    if (!value) return false;
+                    const regex = /^(?=.*\d)/;
+                    return regex.test(value)
+                }),
     confirmPassword: Yup.string().required().oneOf([Yup.ref('password'), ""], 'Passwords not match'),
 })
 
 export default {
     async register(req: Request, res: Response) {
+        /**
+        
+        #swagger.tags = ['Auth']
+        #swagger.requestBody = {
+            required: true,
+            schema: {
+                $ref: "#/components/schemas/RegisterRequest"
+            }
+         }
+
+        */
         const { fullName, username, email, password, confirmPassword } = req.body as unknown as TRegister;
         try {
             await registerValidateSchema.validate({ fullName, username, email, password, confirmPassword });
@@ -60,6 +82,7 @@ export default {
                 $ref: "#/components/schemas/LoginRequest"
             }
          }
+        #swagger.tags = ['Auth']
          */
         try {
             // ambil data user berdasarkan indentifier -> email atau username
@@ -69,7 +92,8 @@ export default {
                     // { email: req.body.identifier },
                     { email: identifier },
                     { username: identifier }
-                ]
+                ],
+                isActive: true
             });
             if (!userByIdentifier) {
                 return res.status(403).json({
@@ -112,6 +136,7 @@ export default {
         #swagger.security = [{
             "bearerAuth": []
         }]
+        #swagger.tags = ['Auth']
          */
         try {
             const user = req.user;
@@ -136,4 +161,42 @@ export default {
             });
         }
     },
+
+    async activation(req: Request, res: Response) {
+        /**
+        #swagger.tags = ['Auth']
+        #swagger.requestBody = {
+            required: true,
+            schema: {
+                $ref: "#/components/schemas/ActivationRequest"
+            }
+        }
+         */
+        try {
+            const { code } = req.body as { code: string };
+            const user = await UserModel.findOneAndUpdate(
+                {
+                    activationCode: code,
+                },
+                {
+                    isActive: true,
+                },
+                {
+                    new: true,
+                })
+
+            res.status(200).json({
+                message: "Success Activation",
+                data: user
+            })
+        } catch (error) {
+            const err = error as unknown as Error;
+            res.status(400).json({
+                message: err.message,
+                data: null
+            });
+        } finally {
+
+        }
+    }
 }

@@ -28,6 +28,16 @@ const doc = {
             LoginRequest: {
                 identifier: "Mahesa",
                 password: "123456"
+            },
+            RegisterRequest: {
+                fullName: "Mahesa adi kusuma",
+                username: "mahesa",
+                email: "mahesaadi03@gmail.com",
+                password: "123456",
+                confirmPassword: "123456"
+            },
+            ActivationRequest: {
+                code: "abcdef"
             }
         }
     }
